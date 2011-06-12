@@ -66,29 +66,29 @@ class BoardGUI(tk.Frame):
 
         if self.selected_piece and ((piece is None) or\
               (piece.color != self.selected_piece[0].color)):
-           # making a move
-           try:
-              chessboard.move(self.selected_piece[1], pos)
-           except chessboard.Check:
-              self.label_status["text"] = " You are in check!"
-           except chessboard.CheckMate:
-              self.label_status["text"] = " Check!"
-           except chessboard.InvalidMove:
-              self.label_status["text"] = " Invalid move!"
-           except chessboard.Draw:
-              self.label_status["text"] = " Draw!"
-           except Exception as e:
-              self.label_status["text"] = e.__class__.__name__
-           else:
-              self.label_status["text"] = " " + self.selected_piece[0].get_color().capitalize() +": "+ self.selected_piece[1]+pos
+            # making a move
+            try:
+                chessboard.move(self.selected_piece[1], pos)
+            except chessboard.Check:
+                self.label_status["text"] = " You are in check!"
+            except chessboard.CheckMate:
+                self.label_status["text"] = " Check!"
+            except chessboard.InvalidMove:
+                self.label_status["text"] = " Invalid move!"
+            except chessboard.Draw:
+                self.label_status["text"] = " Draw!"
+            except Exception as e:
+                self.label_status["text"] = e.__class__.__name__
+            else:
+                self.label_status["text"] = " " + self.selected_piece[0].get_color().capitalize() +": "+ self.selected_piece[1]+pos
 
-              
-           self.selected_piece = None
-           self.hilighted = None
-           self.pieces = {}
-           self.refresh(event)
-           self.draw_pieces()
-           self.refresh(event)
+
+            self.selected_piece = None
+            self.hilighted = None
+            self.pieces = {}
+            self.refresh(event)
+            self.draw_pieces()
+            self.refresh(event)
         self.refresh(event)
 
     def addpiece(self, name, image, row=0, column=0):
@@ -122,11 +122,11 @@ class BoardGUI(tk.Frame):
                 x2 = x1 + self.size
                 y2 = y1 + self.size
                 if (self.selected is not None) and (row, col) == self.selected:
-                   self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="orange", tags="square")
+                    self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="orange", tags="square")
                 elif(self.hilighted is not None and (row, col) in self.hilighted):
-                   self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="spring green", tags="square")
+                    self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="spring green", tags="square")
                 else:
-                   self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill=color, tags="square")
+                    self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill=color, tags="square")
                 color = self.color1 if color == self.color2 else self.color2
         for name in self.pieces:
             self.placepiece(name, self.pieces[name][0], self.pieces[name][1])
@@ -134,26 +134,26 @@ class BoardGUI(tk.Frame):
         self.canvas.tag_lower("square")
 
     def draw_pieces(self):
-       self.canvas.delete("piece")
-       for x in range(0,len(chessboard.table)):
-        for y in range(0,len(chessboard.table[x])):
-           piece = chessboard.table[x][y]
-           if piece is not None:
-               filename = "img/%s%s.png" % (piece.color, piece.abbriviation)
-               piecename = "%s%s%s" % (piece.abbriviation, x, y)
+        self.canvas.delete("piece")
+        for x in range(0,len(chessboard.table)):
+            for y in range(0,len(chessboard.table[x])):
+                piece = chessboard.table[x][y]
+                if piece is not None:
+                    filename = "img/%s%s.png" % (piece.color, piece.abbriviation)
+                    piecename = "%s%s%s" % (piece.abbriviation, x, y)
 
-               if(filename not in self.icons):
-                  self.icons[filename] = ImageTk.PhotoImage(file=filename, width=32, height=32)
+                    if(filename not in self.icons):
+                        self.icons[filename] = ImageTk.PhotoImage(file=filename, width=32, height=32)
 
-               self.addpiece(piecename, self.icons[filename], x, y)
-               self.placepiece(piecename, x, y)
-       #print chessboard.unicode_representation()
+                    self.addpiece(piecename, self.icons[filename], x, y)
+                    self.placepiece(piecename, x, y)
+        #print chessboard.unicode_representation()
 
     def reset(self):
-      chessboard.init()
-      self.refresh()
-      self.draw_pieces()
-      self.refresh()
+        chessboard.init()
+        self.refresh()
+        self.draw_pieces()
+        self.refresh()
 
 def display():
     root = tk.Tk()
