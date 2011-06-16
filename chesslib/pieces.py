@@ -66,7 +66,7 @@ class Piece(object):
                 dest = from_[0]+step*x, from_[1]+step*y
                 if dest not in board.occupied('white') + board.occupied('black'):
                     legal_moves.append(dest)
-                elif dest in board.occupied(piece.get_color()):
+                elif dest in board.occupied(piece.color):
                     collision = True
                 else:
                     legal_moves.append(dest)
@@ -132,7 +132,7 @@ class Knight(Piece):
 
         for x,y in deltas:
             dest = from_[0]+x, from_[1]+y
-            if(dest not in board.occupied(piece.get_color())):
+            if(dest not in board.occupied(piece.color)):
                 legal_moves.append(dest)
 
         legal_moves = filter(board.is_in_bounds, legal_moves)
