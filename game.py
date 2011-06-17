@@ -6,11 +6,10 @@ import os
 
 if os.path.exists("state.fen"):
     with open("state.fen") as save:
-        board.init()
-        board.load(save.read())
+        b = board.Board(save.read())
 else:
-    board.init()
-boardgui.display()
+    b = board.Board()
+boardgui.display(b)
 
 ## Text Mode
 

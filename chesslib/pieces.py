@@ -64,9 +64,9 @@ class Piece(object):
             for step in range(1, distance+1):
                 if collision: break
                 dest = from_[0]+step*x, from_[1]+step*y
-                if dest not in board.occupied('white') + board.occupied('black'):
+                if self.board.letter_notation(dest) not in board.occupied('white') + board.occupied('black'):
                     legal_moves.append(dest)
-                elif dest in board.occupied(piece.color):
+                elif self.board.letter_notation(dest) in board.occupied(piece.color):
                     collision = True
                 else:
                     legal_moves.append(dest)
@@ -101,18 +101,18 @@ class Pawn(Piece):
         forward = from_[0] + direction, from_[1]
 
         # Can we move forward?
-        if forward not in blocked:
+        if board.letter_notation(forward) not in blocked:
             legal_moves.append(forward)
             if from_[0] == homerow:
                 # If pawn in starting position we can do a double move
-                double_forward = forward[0] + direction, forward[1]
-                if double_forward not in blocked:
+                double_forward = (forward[0] + direction, forward[1])
+                if board.letter_notation(double_forward) not in blocked:
                     legal_moves.append(double_forward)
 
         # Attacking
         for a in range(-1, 2, 2):
             attack = from_[0] + direction, from_[1] + a
-            if attack in board.occupied(enemy):
+            if board.letter_notation(attack) in board.occupied(enemy):
                 legal_moves.append(attack)
 
         # TODO: En passant
@@ -132,7 +132,7 @@ class Knight(Piece):
 
         for x,y in deltas:
             dest = from_[0]+x, from_[1]+y
-            if(dest not in board.occupied(piece.color)):
+            if(board.letter_notation(dest) not in board.occupied(piece.color)):
                 legal_moves.append(dest)
 
         legal_moves = filter(board.is_in_bounds, legal_moves)

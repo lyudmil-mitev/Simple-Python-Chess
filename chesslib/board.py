@@ -1,11 +1,13 @@
 # -*- encoding: utf-8 -*-
 from itertools import groupby
+from copy import deepcopy
 
 import pieces
 import re
 
 class ChessError(Exception): pass
 class InvalidCoord(ChessError): pass
+class InvalidColor(ChessError): pass
 class InvalidMove(ChessError): pass
 class Check(ChessError): pass
 class CheckMate(ChessError): pass
@@ -65,12 +67,13 @@ class Board(dict):
         except KeyError:
             return None
 
-    def check_for_check_after_move(self, p):
+    def save_to_file(self): pass
+
+    def is_in_check_after_move(self, p1, p2):
         # Create a temporary board
-        p1,p2 = p
-        tmp = Board(self.export())
+        tmp = deepcopy(self)
         tmp._do_move(p1,p2)
-        return self.is_in_check(self[p1].color)
+        return tmp.is_in_check(self[p1].color)
 
     def move(self, p1, p2):
         p1, p2 = p1.upper(), p2.upper()
@@ -84,46 +87,20 @@ class Board(dict):
         possible_moves = piece.possible_moves(p1)
         # 0. Check if p2 is in the possible moves
         if p2 not in possible_moves:
-           raise InvalidMove
+            raise InvalidMove
 
         # If enemy has any moves look for check
         if self.all_possible_moves(enemy):
-           filter(self.check_for_check_after_move, map(lambda p2: (p1,p2), possible_moves))
-
-        if not possible_moves and self.is_in_check(piece.color):
-           raise CheckMate
-        elif not possible_moves:
-           raise Draw
-        else:
-           self._do_move(p1,p2)
-           self._finish_move(piece, dest, p1,p2)
-
-        '''
-        # 1. Filter possible moves: remove the ones that will make you in check
-         # if no possible moves and not in check -- Draw
-         # if no possible moves and in check -- Checkmate
-        if enemy_moves:
-           # Save current state
-           temporary_board = Board(self.export())
-
-           if p2 in piece.possible_moves(p1):
-              _do_move(p1, p2)
-           elif not piece.possible_moves(p1):
-              raise CheckMate(enemy + " wins!")
-
-           if is_in_check(piece.get_color()):
-              # Restore table
-              table = current_table
+           if self.is_in_check_after_move(p1,p2):
               raise Check
 
-           _finish_move(piece,dest,p1,p2)
-
-        elif p2 in piece.possible_moves(p1):
-           _do_move(p1, p2)
-           _finish_move(piece,dest,p1,p2)
-        elif not piece.possible_moves(p1):
-           raise Draw
-        '''
+        if not possible_moves and self.is_in_check(piece.color):
+            raise CheckMate
+        elif not possible_moves:
+            raise Draw
+        else:
+            self._do_move(p1,p2)
+            self._finish_move(piece, dest, p1,p2)
 
     def get_enemy(self, color):
         if color == "white": return "black"
@@ -186,17 +163,18 @@ class Board(dict):
         if(color not in ("black", "white")): raise InvalidColor
 
         for coord in self:
-            if self[coord].color == color: result.append(coord)
+            if self[coord].color == color:
+               result.append(coord)
         return result
 
     def is_king(self, piece):
-       return isinstance(piece, pieces.King)
-          
+        return isinstance(piece, pieces.King)
+
 
     def get_king_position(self, color):
-       for pos in self.keys():
-          if self.is_king(self[pos]) and self[pos].color == color:
-             return pos
+        for pos in self.keys():
+            if self.is_king(self[pos]) and self[pos].color == color:
+                return pos
 
     def get_king(self, color):
         if(color not in ("black", "white")): raise InvalidColor
@@ -209,7 +187,7 @@ class Board(dict):
         return king in map(self.__getitem__, self.all_possible_moves(enemy))
 
     def letter_notation(self,coord):
-        if not self.is_in_bounds(coord): raise InvalidCoord
+        if not self.is_in_bounds(coord): return
         try:
             return self.axis_y[coord[1]] + str(self.axis_x[coord[0]])
         except IndexError:
@@ -242,6 +220,7 @@ class Board(dict):
         '''
             Import state from FEN notation
         '''
+        self.clear()
         # Split data
         fen = fen.split(' ')
         # Expand blanks
