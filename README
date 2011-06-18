@@ -6,7 +6,7 @@ E-Mail: liudmil.mitev@gmail.com
 
 A simple python chess implementation, a learning project.
 Turns out that programming a chess game is no trivial task,
-so I've tried to make it as modular and as easy as possible.
+so I've tried to make it as modular and as easy to learn from as possible.
 
 Contains:
     * dict-based board representation
