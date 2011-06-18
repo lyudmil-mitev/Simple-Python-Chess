@@ -1,4 +1,3 @@
-# -*- encoding: utf-8 -*-
 from itertools import groupby
 from copy import deepcopy
 
@@ -30,10 +29,9 @@ class Board(dict):
         * Castling
         * Promoting pawns
         * Fifty-move rule
-
     '''
 
-    axis_y = ('A','B','C','D','E','F','G','H')
+    axis_y = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H')
     axis_x = tuple(range(1,9)) # (1,2,3,...8)
 
     captured_pieces = { 'white': [], 'black': [] }
@@ -42,15 +40,7 @@ class Board(dict):
     en_passant = '-'
     halfmove_clock = 0
     fullmove_number = 1
-
     history = []
-
-    unicode_pieces = {
-      'r': u'♜', 'n': u'♞', 'b': u'♝', 'q': u'♛',
-      'k': u'♚', 'p': u'♟', 'R': u'♖', 'N': u'♘',
-      'B': u'♗', 'Q': u'♕', 'K': u'♔', 'P': u'♙',
-      None: ' '
-    }
 
     def __init__(self, fen = None):
         if fen is None: self.load(FEN_STARTING)
@@ -99,7 +89,7 @@ class Board(dict):
         elif not possible_moves:
             raise Draw
         else:
-            self._do_move(p1,p2)
+            self._do_move(p1, p2)
             self._finish_move(piece, dest, p1,p2)
 
     def get_enemy(self, color):
@@ -115,7 +105,7 @@ class Board(dict):
         del self[p1]
         self[p2] = piece
 
-    def _finish_move(self, piece, dest,p1,p2):
+    def _finish_move(self, piece, dest, p1, p2):
         '''
             Set next player turn, count moves, log moves, etc.
         '''
@@ -195,20 +185,6 @@ class Board(dict):
 
     def number_notation(self, coord):
         return int(coord[1])-1, self.axis_y.index(coord[0])
-
-    def unicode_representation(self):
-        '''
-            Print a text-mode chessboard using the unicode chess pieces
-        '''
-        for number in self.axis_x[::-1]:
-            print " " + str(number) + " ",
-            for letter in self.axis_y:
-                piece = self[letter+str(number)]
-                if piece is not None:
-                    print self.unicode_pieces[piece.abbriviation] + ' ',
-                else: print '  ',
-            print "\n"
-        print "    " + "  ".join(self.axis_y)
 
     def is_in_bounds(self, coord):
         if coord[1] < 0 or coord[1] > 7 or\

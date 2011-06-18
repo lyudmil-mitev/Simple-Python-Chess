@@ -3,75 +3,95 @@ import pieces
 import Tkinter as tk
 from PIL import Image, ImageTk
 
-class BoardGUI(tk.Frame):
-    def __init__(self, parent, chessboard, rows=8, columns=8, size=32, color1="white", color2="grey"):
-        ''' size is the size of a square, in pixels '''
+class BoardGuiTk(tk.Frame):
+    pieces = {}
+    selected = None
+    selected_piece = None
+    hilighted = None
+    icons = {}
+
+    color1 = "white"
+    color2 = "grey"
+
+    rows = 8
+    columns = 8
+
+    @property
+    def canvas_size(self):
+        return (self.columns * self.square_size,
+                self.rows * self.square_size)
+
+    def __init__(self, parent, chessboard, square_size=64):
 
         self.chessboard = chessboard
-        self.rows = rows
-        self.columns = columns
-        self.size = size
-        self.color1 = color1
-        self.color2 = color2
-        self.pieces = {}
-        self.selected = None
-        self.selected_piece = None
-        self.hilighted = None
-        self.icons = {}
+        self.square_size = square_size
         self.parent = parent
 
-        canvas_width = columns * size
-        canvas_height = rows * size
+        canvas_width = self.columns * square_size
+        canvas_height = self.rows * square_size
 
         tk.Frame.__init__(self, parent)
-        self.canvas = tk.Canvas(self, borderwidth=0, highlightthickness=0,
-                                width=canvas_width, height=canvas_height, background="grey")
-        self.canvas.pack(side="top", fill="both", expand=True, padx=2, pady=2)
 
+        self.canvas = tk.Canvas(self, width=canvas_width, height=canvas_height, background="grey")
+        self.canvas.pack(side="top", fill="both", anchor="c", expand=True)
+
+        self.canvas.bind("<Configure>", self.refresh)
         self.canvas.bind("<Button-1>", self.click)
 
-        self.button_quit = tk.Button(self, text="New", fg="black", command=self.reset)
-        self.button_quit.pack(side=tk.LEFT)
-        self.button_save = tk.Button(self, text="Save", fg="black", command=self.chessboard.save_to_file)
-        self.button_save.pack(side=tk.LEFT)
+        self.statusbar = tk.Frame(self, height=64)
+        self.button_quit = tk.Button(self.statusbar, text="New", fg="black", command=self.reset)
+        self.button_quit.pack(side=tk.LEFT, in_=self.statusbar)
 
-        self.label_status = tk.Label(self, text="   White's turn  ", fg="black")
-        self.label_status.pack(side=tk.LEFT)
-        self.button_quit = tk.Button(self, text="Quit", fg="black", command=self.close)
-        self.button_quit.pack(side=tk.RIGHT)
+        self.button_save = tk.Button(self.statusbar, text="Save", fg="black", command=self.chessboard.save_to_file)
+        self.button_save.pack(side=tk.LEFT, in_=self.statusbar)
 
-    def close(self):
-        self.parent.destroy()
+        self.label_status = tk.Label(self.statusbar, text="   White's turn  ", fg="black")
+        self.label_status.pack(side=tk.LEFT, expand=0, in_=self.statusbar)
+
+        self.button_quit = tk.Button(self.statusbar, text="Quit", fg="black", command=self.parent.destroy)
+        self.button_quit.pack(side=tk.RIGHT, in_=self.statusbar)
+        self.statusbar.pack(expand=False, fill="x", side='bottom')
+
 
     def click(self, event):
-        col_pix, row_pix = self.ysize, self.ysize
-        col = event.x / col_pix
-        row = 7-(event.y / row_pix)
-        # self.label_status["text"] = "%s, %s, %s, %s" % (event.x, event.y, col, row)
-        self.selected = (row, col)
-        pos = self.chessboard.letter_notation(self.selected)
-        piece = self.chessboard[pos]
-        if piece is not None and (piece.color == self.chessboard.player_turn):
-            self.selected_piece = (piece, pos)
-            self.hilighted = map(self.chessboard.number_notation, (self.chessboard[pos].possible_moves(pos)))
 
-        if self.selected_piece and ((piece is None) or\
-              (piece.color != self.selected_piece[0].color)):
-            # making a move
-            try:
-                self.chessboard.move(self.selected_piece[1], pos)
-            except board.ChessError as e:
-                self.label_status["text"] = e.__class__.__name__
-            else:
-                self.label_status["text"] = " " + self.selected_piece[0].color.capitalize() +": "+ self.selected_piece[1]+pos
+        # Figure out which square we've clicked
+        col_size = row_size = event.widget.master.square_size
 
+        current_column = event.x / col_size
+        current_row = 7 - (event.y / row_size)
+
+        position = self.chessboard.letter_notation((current_row, current_column))
+        piece = self.chessboard[position]
+
+        if self.selected_piece:
+            self.move(self.selected_piece[1], position)
             self.selected_piece = None
             self.hilighted = None
             self.pieces = {}
-            self.refresh(event)
+            self.refresh()
             self.draw_pieces()
-            self.refresh(event)
-        self.refresh(event)
+
+        self.hilight(position)
+        self.refresh()
+
+    def move(self, p1, p2):
+        piece = self.chessboard[p1]
+        dest_piece = self.chessboard[p2]
+        if dest_piece is None or dest_piece.color != piece.color:
+            try:
+                self.chessboard.move(p1,p2)
+            except board.ChessError as error:
+                self.label_status["text"] = error.__class__.__name__
+            else:
+                self.label_status["text"] = " " + piece.color.capitalize() +": "+ p1 + p2
+        
+
+    def hilight(self, pos):
+        piece = self.chessboard[pos]
+        if piece is not None and (piece.color == self.chessboard.player_turn):
+            self.selected_piece = (self.chessboard[pos], pos)
+            self.hilighted = map(self.chessboard.number_notation, (self.chessboard[pos].possible_moves(pos)))
 
     def addpiece(self, name, image, row=0, column=0):
         '''Add a piece to the playing board'''
@@ -81,28 +101,26 @@ class BoardGUI(tk.Frame):
     def placepiece(self, name, row, column):
         '''Place a piece at the given row/column'''
         self.pieces[name] = (row, column)
-        x0 = (column * self.size) + int(self.size/2)
-        y0 = ((7-row) * self.size) + int(self.size/2)
+        x0 = (column * self.square_size) + int(self.square_size/2)
+        y0 = ((7-row) * self.square_size) + int(self.square_size/2)
         self.canvas.coords(name, x0, y0)
 
     def refresh(self, event={}):
         '''Redraw the board'''
-        try:
-            self.xsize = int((event.width-1) / self.columns)
-            self.ysize = int((event.height-1) / self.rows)
-        except Exception:
-            pass
+        if event:
+            xsize = int((event.width-1) / self.columns)
+            ysize = int((event.height-1) / self.rows)
+            self.square_size = min(xsize, ysize)
 
-        self.size = min(self.xsize, self.ysize)
         self.canvas.delete("square")
         color = self.color2
         for row in range(self.rows):
             color = self.color1 if color == self.color2 else self.color2
             for col in range(self.columns):
-                x1 = (col * self.size)
-                y1 = ((7-row) * self.size)
-                x2 = x1 + self.size
-                y2 = y1 + self.size
+                x1 = (col * self.square_size)
+                y1 = ((7-row) * self.square_size)
+                x2 = x1 + self.square_size
+                y2 = y1 + self.square_size
                 if (self.selected is not None) and (row, col) == self.selected:
                     self.canvas.create_rectangle(x1, y1, x2, y2, outline="black", fill="orange", tags="square")
                 elif(self.hilighted is not None and (row, col) in self.hilighted):
@@ -137,10 +155,11 @@ class BoardGUI(tk.Frame):
 
 def display(chessboard):
     root = tk.Tk()
-    root.title("Simply Chess")
-    b= BoardGUI(root, chessboard)
-    b.pack(side="top", fill="both", expand="false", padx=4, pady=4)
-    b.draw_pieces()
+    root.title("Simple Python Chess")
+    
+    gui = BoardGuiTk(root, chessboard)
+    gui.pack(side="top", fill="both", expand="true", padx=4, pady=4)
+    gui.draw_pieces()
 
     #root.resizable(0,0)
     root.mainloop()
