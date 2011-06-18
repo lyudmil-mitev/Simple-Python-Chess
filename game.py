@@ -1,27 +1,32 @@
 #!/usr/bin/env python
 
 from chesslib import board
-from chesslib import boardgui
+
 import os
+import sys
+
+# Load a save if it exists
 
 if os.path.exists("state.fen"):
     with open("state.fen") as save:
-        b = board.Board(save.read())
+        game = board.Board(save.read())
 else:
-    b = board.Board()
-boardgui.display(b)
+    game = board.Board()
 
-## Text Mode
+# Choose display method
+if len(sys.argv) > 1:
+    if sys.argv[1] in ('--console', '-c'):
+        from chesslib.gui_console import display
+        display(game)
+        exit(0)
+    elif sys.argv[1] in ('--help', '-h'):
+        print '''Usage: game.py [OPTION]\n\n\tPlay a game of chess\n\n\tOptions:\n\t -c, --console\tplay in console mode\n\n'''
+        exit(0)
 
-#os.system("clear")
-#board.init()
-#board.unicode_representation()
+try:
+    from chesslib.gui_tkinter import display
+except ImportError:
+    from chesslib.gui_console import display
+else:
+    display(game)
 
-def move(coord):
-    board.move(coord[0:2], coord[2:4])
-    os.system("clear")
-    board.unicode_representation()
-
-def render():
-    os.system("clear")
-    board.unicode_representation()
