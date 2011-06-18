@@ -1,9 +1,12 @@
 #!/usr/bin/env python
-
-from chesslib import board
-
 import os
 import sys
+
+if sys.version_info[0] > 2:
+    print("This game runs on python 2 only")
+
+
+from chesslib import board
 
 # Load a save if it exists
 
@@ -29,4 +32,3 @@ except ImportError:
     from chesslib.gui_console import display
 else:
     display(game)
-

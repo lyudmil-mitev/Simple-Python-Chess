@@ -34,7 +34,7 @@ class BoardGuiConsole(object):
             os.system("clear")
         except board.ChessError as error:
             self.error = "Error: %s" % error.__class__.__name__
-            
+
         self.move()
 
     def unicode_representation(self):
@@ -57,4 +57,3 @@ def display(board):
     except (KeyboardInterrupt, EOFError):
         os.system("clear")
         exit(0)
-

@@ -81,8 +81,8 @@ class Board(dict):
 
         # If enemy has any moves look for check
         if self.all_possible_moves(enemy):
-           if self.is_in_check_after_move(p1,p2):
-              raise Check
+            if self.is_in_check_after_move(p1,p2):
+                raise Check
 
         if not possible_moves and self.is_in_check(piece.color):
             raise CheckMate
@@ -154,7 +154,7 @@ class Board(dict):
 
         for coord in self:
             if self[coord].color == color:
-               result.append(coord)
+                result.append(coord)
         return result
 
     def is_king(self, piece):

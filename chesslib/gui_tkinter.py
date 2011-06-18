@@ -85,7 +85,7 @@ class BoardGuiTk(tk.Frame):
                 self.label_status["text"] = error.__class__.__name__
             else:
                 self.label_status["text"] = " " + piece.color.capitalize() +": "+ p1 + p2
-        
+
 
     def hilight(self, pos):
         piece = self.chessboard[pos]
@@ -156,7 +156,7 @@ class BoardGuiTk(tk.Frame):
 def display(chessboard):
     root = tk.Tk()
     root.title("Simple Python Chess")
-    
+
     gui = BoardGuiTk(root, chessboard)
     gui.pack(side="top", fill="both", expand="true", padx=4, pady=4)
     gui.draw_pieces()

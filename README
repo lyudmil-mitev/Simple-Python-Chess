@@ -9,22 +9,22 @@ Turns out that programming a chess game is no trivial task,
 so I've tried to make it as modular and as easy as possible.
 
 Contains:
-   * dict-based board representation
-   * move validation
-   * Console-based Unicode GUI
-   * TkInter GUI
+    * dict-based board representation
+    * move validation
+    * Console-based Unicode GUI
+    * TkInter GUI
 
 Requirements:
-   * Python 2.5+
-   * TkInter
-   * PIL
+    * Python 2.5+
+    * TkInter
+    * PIL
 
 To install the dependancies on debian/ubuntu run:
-   sudo apt-get install python-tk python-imaging python-imaging-tk
+    sudo apt-get install python-tk python-imaging python-imaging-tk
 
 TODO:
-   * En passant
-   * Pawn promotion
-   * Fifty-move rule
-   * Tests
-   * Scalable GUI window
+    * En passant
+    * Pawn promotion
+    * Fifty-move rule
+    * Tests
+    * Scalable GUI window
