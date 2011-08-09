@@ -30,5 +30,5 @@ try:
     from chesslib.gui_tkinter import display
 except ImportError:
     from chesslib.gui_console import display
-else:
+finally:
     display(game)
