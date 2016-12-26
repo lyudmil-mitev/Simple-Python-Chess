@@ -1,3 +1,5 @@
+import os
+import glob
 import board
 import pieces
 import Tkinter as tk
@@ -19,6 +21,52 @@ class BoardGuiTk(tk.Frame):
     rows = 8
     columns = 8
 
+    def ask_piece(self, color):
+        if not self.prompting:
+            top = tk.Toplevel()
+            codes = 'QRBN'
+            def on_click(event):
+                x = event.x // self.square_size
+                if 0 <= x and x < len(codes):
+                    self.promote_code = codes[x]
+                    top.destroy()
+
+            canvas = tk.Canvas(top,
+                               width=len(codes) * self.square_size,
+                               height=self.square_size,
+                               background='grey')
+            canvas.bind('<Button-1>', on_click)
+            canvas.pack(side="top", fill="both", anchor="c", expand=True)
+            x = -self.square_size / 2
+            y = self.square_size / 2
+            for i, code in enumerate(codes):
+                x += self.square_size
+                canvas.create_rectangle(i * self.square_size, 0,
+                                        (i + 1) * self.square_size, self.square_size,
+                                        outline="black",
+                                        fill=[color1, color2][i % 2],
+                                        tags="square")
+                filename = "img/%s%s.png" % (color, code.lower())
+                piecename = "%s%s%s" % (code.lower, x, y)
+                canvas.create_image(x, y, image=self.icons[filename], tags=("piece",), anchor="c")
+            self.prompting = True
+            parent_geom = self.parent.geometry()
+            wh, x, y = parent_geom.split('+')
+            x = int(x)
+            y = int(y)
+            if x < 0:
+                x = 0
+            if y < 0:
+                y = 0
+            w, h = wh.split('x')
+            w = int(w)
+            h = int(h)
+
+            geom = "%dx%d%+d%+d" % (len(codes) * self.square_size,
+                                    self.square_size, x, y)
+            top.geometry(geom)
+            self.wait_window(top)
+            self.prompting = False
     @property
     def canvas_size(self):
         return (self.columns * self.square_size,
@@ -32,6 +80,7 @@ class BoardGuiTk(tk.Frame):
         self.parent = parent
         self.from_square = None
         self.to_square = None
+        self.prompting = False
 
         canvas_width = self.columns * square_size
         canvas_height = self.rows * square_size
@@ -114,6 +163,7 @@ class BoardGuiTk(tk.Frame):
             
 
     def move(self, p1, p2):
+        
         piece = self.chessboard[p1]
         enemy = self.chessboard.get_enemy(piece.color)
         dest_piece = self.chessboard[p2]
@@ -121,8 +171,15 @@ class BoardGuiTk(tk.Frame):
             try:
                 if self.from_square:
                     self.redraw_square(self.from_square)
+                if self.to_square:
                     self.redraw_square(self.to_square)
-                self.chessboard.move(p1,p2)
+                if isinstance(piece, pieces.Pawn) and p2[1] in '18':
+                    ### promotion!
+                    self.ask_piece(piece.color)
+                    promote = self.promote_code
+                else:
+                    promote = None
+                self.chessboard.move(p1, p2, promote=promote)
                 self.from_square = self.chessboard.number_notation(p1)
                 self.to_square = self.chessboard.number_notation(p2)
                 self.redraw_square(self.from_square, 'tan1')

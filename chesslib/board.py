@@ -28,7 +28,11 @@ class Board(dict):
         * En passant (Done TJS)
         * Castling (Done TJS)
         * Promoting pawns (Done TJS)
+        * 3-time repition (Done TJS)
         * Fifty-move rule
+        * Take-backs
+        * row/column lables
+        * captured piece imbalance (show how many pawns pieces player is up)
     '''
 
     axis_y = ('A', 'B', 'C', 'D', 'E', 'F', 'G', 'H')
@@ -45,7 +49,6 @@ class Board(dict):
         else: self.load(fen)
         self.last_move = None ## to support en passent
         self.positions = [None]
-        self.history = []
         
     def __getitem__(self, coord):
         if isinstance(coord, str):
@@ -103,7 +106,7 @@ class Board(dict):
         if color == "white": return "black"
         else: return "white"
 
-    def is_enpassent(self, p1, p2, piece):
+    def is_en_passent(self, p1, p2, piece):
         '''
         return False if move is not an en passent, otherwise return square to capture on
         '''
@@ -151,14 +154,14 @@ class Board(dict):
         if castle:
             move = castle
             self._do_move(move[:2], move[2:])
-        en_passent = self.is_enpassent(p1, p2, piece)
+        en_passent = self.is_en_passent(p1, p2, piece)
         if en_passent:
             del self[en_passent]
         del self[p1]
         self.last_move = (p1, p2)
         ## check pawn promotion
         if self.is_pawn(piece) and p2[1] in '18':
-            piece = pieces.Pieces[promote](piece.color)
+            piece = pieces.Pieces[promote.upper()](piece.color)
             piece.board = self
         self[p2] = piece
 
@@ -189,9 +192,6 @@ class Board(dict):
             movetext = abbr + 'x' + p2.lower()
             # Capturing resets halfmove_clock
             self.halfmove_clock = 0
-
-        self.history.append(movetext)
-
 
     def all_possible_moves(self, color):
         '''

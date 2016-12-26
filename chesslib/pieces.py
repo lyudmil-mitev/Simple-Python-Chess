@@ -201,10 +201,10 @@ class King(Piece):
                         out.append('C8')
         return out
 Pieces = {
-    'p':Pawn,
-    'r':Rook,
-    'k':Knight,
-    'b':Bishop,
-    'q':Queen,
-    'k':King
+    'P':Pawn,
+    'R':Rook,
+    'N':Knight,
+    'B':Bishop,
+    'Q':Queen,
+    'K':King
 }
