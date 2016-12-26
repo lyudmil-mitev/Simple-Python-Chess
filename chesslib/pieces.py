@@ -28,6 +28,7 @@ class Piece(object):
     __slots__ = ('abbriviation', 'color')
 
     def __init__(self, color):
+        self.can_castle = False
         if color == 'white':
             self.abbriviation = self.abbriviation.upper()
         elif color == 'black':
@@ -115,7 +116,15 @@ class Pawn(Piece):
             if board.letter_notation(attack) in board.occupied(enemy):
                 legal_moves.append(attack)
 
-        # TODO: En passant
+        ## TJS: check for en passent
+        en_passent = board.can_en_passent()
+        if en_passent != '-':
+            if self.color == 'white' and position[1] == '5':
+                if abs(ord(position[0].lower()) - ord(en_passent[0].lower())) == 1:
+                    legal_moves.append((int(en_passent[1]) - 1, ord(en_passent[0].lower()) - ord('a')))
+            if self.color == 'black' and position[1] == '4':
+                if abs(ord(position[0].lower()) - ord(en_passent[0].lower())) == 1:
+                    legal_moves.append((int(en_passent[1]) - 1, ord(en_passent[0].lower()) - ord('a')))
         legal_moves = filter(board.is_in_bounds, legal_moves)
         return map(board.letter_notation, legal_moves)
 
@@ -141,6 +150,9 @@ class Knight(Piece):
 
 class Rook(Piece):
     abbriviation = 'r'
+    def __init__(self, color):
+        Piece.__init__(self, color)
+        self.can_castle = True
     def possible_moves(self,position):
         position = position.upper()
         return super(Rook, self).possible_moves(position, True, False, 8)
@@ -160,6 +172,39 @@ class Queen(Piece):
 class King(Piece):
     abbriviation = 'k'
     move_length = 1
+    def __init__(self, color):
+        Piece.__init__(self, color)
+        self.can_castle = True
+        
     def possible_moves(self,position):
         position = position.upper()
-        return super(King, self).possible_moves(position, True, True, 1)
+        out = super(King, self).possible_moves(position, True, True, 1)
+        ## check castling
+        if self.can_castle:
+            if self.color == 'white':
+                if self.board['H1'] is not None and self.board['H1'].can_castle:
+                    if self.board['F1'] is None and self.board['G1'] is None:
+                        out.append('G1')
+                if self.board['A1'] is not None and self.board['A1'].can_castle:
+                    if (self.board['B1'] is None and
+                        self.board['C1'] is None and
+                        self.board['D1'] is None):
+                        out.append('C1')
+            else:
+                if self.board['H8'] is not None and self.board['H8'].can_castle:
+                    if self.board['F8'] is None and self.board['G8'] is None:
+                        out.append('G8')
+                if self.board['A8'] is not None and self.board['A8'].can_castle:
+                    if (self.board['B8'] is None and
+                        self.board['C8'] is None and
+                        self.board['D8'] is None):
+                        out.append('C8')
+        return out
+Pieces = {
+    'p':Pawn,
+    'r':Rook,
+    'k':Knight,
+    'b':Bishop,
+    'q':Queen,
+    'k':King
+}
