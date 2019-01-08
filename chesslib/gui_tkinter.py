@@ -162,7 +162,7 @@ class BoardGuiTk(tk.Frame):
             self.redraw_square(enemy_king_loc, 'red')
             
 
-    def move(self, p1, p2):
+    def move(self, p1, p2, promote=None):
         
         piece = self.chessboard[p1]
         enemy = self.chessboard.get_enemy(piece.color)
@@ -175,8 +175,9 @@ class BoardGuiTk(tk.Frame):
                     self.redraw_square(self.to_square)
                 if isinstance(piece, pieces.Pawn) and p2[1] in '18':
                     ### promotion!
-                    self.ask_piece(piece.color)
-                    promote = self.promote_code
+                    if promote is None:
+                        self.ask_piece(piece.color)
+                        promote = self.promote_code
                 else:
                     promote = None
                 self.chessboard.move(p1, p2, promote=promote)
